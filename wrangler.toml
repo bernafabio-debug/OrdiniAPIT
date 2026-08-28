@@ -1,4 +1,4 @@
-name = "po-manager"
+name = "ordiniapit"
 main = ".open-next/worker.js"
 compatibility_date = "2026-01-15"
 compatibility_flags = ["nodejs_compat"]
