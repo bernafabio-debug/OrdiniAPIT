@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "PO Manager",
+  title: "PO Manager Service",
   description: "Gestione richieste di acquisto materiali"
 };
 
