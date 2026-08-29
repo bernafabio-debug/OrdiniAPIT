@@ -14,7 +14,7 @@ export function exportOrderToXlsx(order: OrderWithItems) {
     "Unità Misura": it.unit,
     Fornitore: it.supplier ?? "",
     Spedizione: order.shipping,
-    "Consegna Unica": order.delivery_single,
+    "Split Delivery": order.delivery_single,
     "Stock (Tecnico)": order.stock_technician ?? "",
     "Stock (Codice)": order.stock_code ?? "",
     Note: order.notes ?? ""

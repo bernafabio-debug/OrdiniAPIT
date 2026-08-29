@@ -27,7 +27,7 @@ export function exportOrderToPdf(order: OrderWithItems) {
   doc.text(`Stato: ${order.status}`, 14, infoY + 12);
   doc.text(`Spedizione: ${order.shipping}`, 110, infoY);
   doc.text(`Stock: ${order.stock_technician ?? ""} (${order.stock_code ?? ""})`, 110, infoY + 6);
-  doc.text(`Consegna unica: ${order.delivery_single}`, 110, infoY + 12);
+  doc.text(`Split Delivery: ${order.delivery_single}`, 110, infoY + 12);
 
   autoTable(doc, {
     startY: infoY + 20,

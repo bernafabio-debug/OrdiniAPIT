@@ -37,7 +37,7 @@ export type OrderStatus =
   | "Annullato";
 
 export type ItemType = "Consumabile" | "Tool" | "Asset";
-export type ShippingMethod = "DHL" | "Collega" | "Altro";
+export type ShippingMethod = "DHL Collega" | "Cliente" | "APIT";
 
 export interface OrderItem {
   id: string;
@@ -81,4 +81,4 @@ export const ORDER_STATUSES: OrderStatus[] = [
 ];
 
 export const ITEM_TYPES: ItemType[] = ["Consumabile", "Tool", "Asset"];
-export const SHIPPING_METHODS: ShippingMethod[] = ["DHL", "Collega", "Altro"];
+export const SHIPPING_METHODS: ShippingMethod[] = ["DHL Collega", "Cliente", "APIT"];
