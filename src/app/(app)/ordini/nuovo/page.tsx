@@ -36,7 +36,7 @@ export default function NuovoOrdinePage() {
 
   const [requestDate, setRequestDate] = useState(today);
   const [deliverySingle, setDeliverySingle] = useState<"SI" | "NO">("NO");
-  const [shipping, setShipping] = useState<ShippingMethod>("DHL");
+  const [shipping, setShipping] = useState<ShippingMethod>("DHL Collega");
   const [stockLocations, setStockLocations] = useState<StockLocation[]>([]);
   const [stockCode, setStockCode] = useState("");
   const [notes, setNotes] = useState("");
@@ -150,10 +150,10 @@ export default function NuovoOrdinePage() {
             </select>
           </div>
           <div>
-            <label className="label-field">Consegna unica</label>
+            <label className="label-field">Split Delivery</label>
             <select className="input-field" value={deliverySingle} onChange={(e) => setDeliverySingle(e.target.value as "SI" | "NO")}>
-              <option value="NO">NO — consegne anche in più volte</option>
-              <option value="SI">SI — consegna unica richiesta</option>
+              <option value="NO">NO — consegna unica</option>
+              <option value="SI">SI — consegna multipla</option>
             </select>
           </div>
         </div>
