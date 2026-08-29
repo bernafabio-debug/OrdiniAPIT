@@ -15,7 +15,7 @@ import {
   CartesianGrid
 } from "recharts";
 
-const COLORS = ["#2564cf", "#107c10", "#986f0b", "#d13438", "#5c2d91", "#008272"];
+const COLORS = ["#CC0001", "#107c10", "#986f0b", "#d13438", "#5c2d91", "#008272"];
 
 export function TopBarChart({ data, dataKey = "count", nameKey = "name" }: {
   data: Array<Record<string, string | number>>;
@@ -31,7 +31,7 @@ export function TopBarChart({ data, dataKey = "count", nameKey = "name" }: {
         <XAxis type="number" allowDecimals={false} tick={{ fontSize: 12 }} />
         <YAxis type="category" dataKey={nameKey} width={140} tick={{ fontSize: 12 }} />
         <Tooltip />
-        <Bar dataKey={dataKey} fill="#2564cf" radius={[0, 4, 4, 0]} />
+        <Bar dataKey={dataKey} fill="#CC0001" radius={[0, 4, 4, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -66,7 +66,7 @@ export function MonthlyTrendChart({ data }: { data: Array<{ month: string; count
         <XAxis dataKey="month" tick={{ fontSize: 12 }} />
         <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
         <Tooltip />
-        <Line type="monotone" dataKey="count" stroke="#2564cf" strokeWidth={2} dot={{ r: 3 }} />
+        <Line type="monotone" dataKey="count" stroke="#CC0001" strokeWidth={2} dot={{ r: 3 }} />
       </LineChart>
     </ResponsiveContainer>
   );

@@ -32,9 +32,8 @@ export default function Sidebar({ role, name }: { role: "user" | "admin"; name: 
   return (
     <aside className="w-60 shrink-0 bg-fluent-sidebar text-white flex flex-col h-screen sticky top-0">
       <div className="px-5 py-5 flex items-center gap-2 border-b border-white/10">
-        <div className="w-8 h-8 rounded-lg bg-fluent-accent flex items-center justify-center font-bold text-sm">
-          PO
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.jpg" alt="Logo aziendale" className="w-8 h-8 rounded-lg object-cover shrink-0" />
         <span className="font-semibold text-sm">PO Manager Service</span>
       </div>
 
