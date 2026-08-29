@@ -24,7 +24,7 @@ database_name = "po_manager_db"
 # Sostituisci con l'ID reale: lo trovi in
 #   Cloudflare Dashboard → Storage & Databases → D1 → po_manager_db
 # oppure con: wrangler d1 create po_manager_db (se non l'hai già creato)
-database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+database_id = "po_manager_db"
 
 # SESSION_SECRET NON va scritto qui in chiaro: va impostato come Secret dalla
 # dashboard (Settings → Variables and Secrets → Add → tipo "Secret") oppure con
