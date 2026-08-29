@@ -6,7 +6,7 @@ export function exportOrderToPdf(order: OrderWithItems) {
   const doc = new jsPDF();
 
   // Placeholder logo aziendale (sostituire con il logo reale, es. doc.addImage(...))
-  doc.setFillColor(37, 100, 207);
+  doc.setFillColor(204, 0, 1);
   doc.rect(14, 12, 10, 10, "F");
   doc.setFontSize(10);
   doc.setTextColor(255, 255, 255);
@@ -41,7 +41,7 @@ export function exportOrderToPdf(order: OrderWithItems) {
       it.supplier ?? ""
     ]),
     styles: { fontSize: 9 },
-    headStyles: { fillColor: [37, 100, 207] }
+    headStyles: { fillColor: [204, 0, 1] }
   });
 
   // @ts-expect-error - lastAutoTable viene aggiunto dinamicamente dal plugin autotable
