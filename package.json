@@ -1,0 +1,38 @@
+{
+  "name": "po-manager",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "cf:build": "opennextjs-cloudflare build",
+    "cf:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "cf:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "db:migrate:local": "wrangler d1 execute po_manager_db --local --file=./migrations/0001_init.sql && wrangler d1 execute po_manager_db --local --file=./migrations/0002_seed.sql",
+    "db:migrate:remote": "wrangler d1 execute po_manager_db --remote --file=./migrations/0001_init.sql && wrangler d1 execute po_manager_db --remote --file=./migrations/0002_seed.sql"
+  },
+  "dependencies": {
+    "next": "15.5.24",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.12.7",
+    "jspdf": "^2.5.2",
+    "jspdf-autotable": "^3.8.4",
+    "xlsx": "^0.18.5",
+    "lucide-react": "^0.383.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "tailwindcss": "^3.4.7",
+    "postcss": "^8.4.40",
+    "autoprefixer": "^10.4.19",
+    "wrangler": "^4.125.0",
+    "@opennextjs/cloudflare": "^1.20.4",
+    "@cloudflare/workers-types": "^5.20260828.1"
+  }
+}

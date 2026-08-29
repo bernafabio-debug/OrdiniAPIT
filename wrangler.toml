@@ -1,0 +1,32 @@
+name = "po-manager"
+main = ".open-next/worker.js"
+compatibility_date = "2026-01-15"
+compatibility_flags = ["nodejs_compat"]
+
+# `keep_vars = true` dice a wrangler di NON cancellare le Variables/Secrets
+# impostate da dashboard (es. SESSION_SECRET) ad ogni nuovo deploy da GitHub.
+keep_vars = true
+
+# IMPORTANTE: wrangler.toml è la fonte di verità per il Worker. Ad ogni deploy
+# (anche quelli automatici lanciati da Cloudflare dopo un push su GitHub),
+# wrangler applica QUESTO file e sovrascrive eventuali binding aggiunti a mano
+# dalla dashboard. Se hai già collegato il database D1 da Settings → Bindings,
+# copia comunque il suo "database_id" reale qui sotto: è questo valore che
+# verrà effettivamente usato al prossimo deploy.
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "po_manager_db"
+# Sostituisci con l'ID reale: lo trovi in
+#   Cloudflare Dashboard → Storage & Databases → D1 → po_manager_db
+# oppure con: wrangler d1 create po_manager_db (se non l'hai già creato)
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+
+# SESSION_SECRET NON va scritto qui in chiaro: va impostato come Secret dalla
+# dashboard (Settings → Variables and Secrets → Add → tipo "Secret") oppure con
+#   wrangler secret put SESSION_SECRET
+# Grazie a keep_vars=true (sopra) sopravvive ai deploy automatici da GitHub.
