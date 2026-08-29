@@ -12,10 +12,10 @@ import {
 } from "lucide-react";
 
 const NAV_ITEMS = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, adminOnly: false },
-  { href: "/materiali", label: "Catalogo Materiali", icon: Package, adminOnly: false },
   { href: "/ordini/nuovo", label: "Nuovo Ordine", icon: FilePlus2, adminOnly: false },
   { href: "/ordini", label: "Storico Ordini", icon: History, adminOnly: false },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, adminOnly: false },
+  { href: "/materiali", label: "Catalogo Materiali", icon: Package, adminOnly: false },
   { href: "/admin", label: "Amministrazione", icon: ShieldCheck, adminOnly: true }
 ];
 
@@ -35,7 +35,7 @@ export default function Sidebar({ role, name }: { role: "user" | "admin"; name: 
         <div className="w-8 h-8 rounded-lg bg-fluent-accent flex items-center justify-center font-bold text-sm">
           PO
         </div>
-        <span className="font-semibold text-sm">PO Manager</span>
+        <span className="font-semibold text-sm">PO Manager Service</span>
       </div>
 
       <nav className="flex-1 py-3 px-2 space-y-0.5">
