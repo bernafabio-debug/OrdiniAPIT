@@ -112,6 +112,9 @@ export default function StoricoOrdiniPage() {
                 </p>
               </div>
               <div className="flex items-center gap-2">
+                <span className={`badge ${o.delivery_single === "SI" ? "bg-amber-100 text-amber-700" : "bg-green-100 text-green-700"}`}>
+                  {o.delivery_single === "SI" ? "Consegna multipla" : "Consegna unica"}
+                </span>
                 {role === "admin" ? (
                   <select
                     className="text-xs border border-fluent-border rounded-md px-2 py-1"
