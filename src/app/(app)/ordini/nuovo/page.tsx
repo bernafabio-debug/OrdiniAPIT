@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import MaterialAutocomplete from "@/components/MaterialAutocomplete";
-import type { Material, ItemType, ShippingMethod } from "@/lib/types";
+import type { Material, ItemType, ShippingMethod, StockLocation } from "@/lib/types";
 import { ITEM_TYPES, SHIPPING_METHODS } from "@/lib/types";
 
 type DraftItem = {
@@ -37,10 +37,18 @@ export default function NuovoOrdinePage() {
   const [requestDate, setRequestDate] = useState(today);
   const [deliverySingle, setDeliverySingle] = useState<"SI" | "NO">("NO");
   const [shipping, setShipping] = useState<ShippingMethod>("DHL");
+  const [stockLocations, setStockLocations] = useState<StockLocation[]>([]);
+  const [stockCode, setStockCode] = useState("");
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState<DraftItem[]>([emptyItem()]);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/stock-locations?active=1")
+      .then((r) => r.json())
+      .then((d) => setStockLocations((d as { stockLocations: StockLocation[] }).stockLocations ?? []));
+  }, []);
 
   function updateItem(key: string, patch: Partial<DraftItem>) {
     setItems((prev) => prev.map((it) => (it.key === key ? { ...it, ...patch } : it)));
@@ -73,6 +81,12 @@ export default function NuovoOrdinePage() {
       setError("Aggiungi almeno un materiale valido (seleziona dal catalogo).");
       return;
     }
+    if (!stockCode) {
+      setError("Seleziona lo stock di destinazione.");
+      return;
+    }
+
+    const selectedStock = stockLocations.find((s) => s.code === stockCode);
 
     setSubmitting(true);
     const res = await fetch("/api/orders", {
@@ -82,6 +96,8 @@ export default function NuovoOrdinePage() {
         request_date: requestDate,
         delivery_single: deliverySingle,
         shipping,
+        stock_code: stockCode,
+        stock_technician: selectedStock?.technician_name ?? "",
         notes,
         items: validItems.map((it) => ({
           material_code: it.material_code,
@@ -113,10 +129,19 @@ export default function NuovoOrdinePage() {
       <p className="text-sm text-fluent-textMuted mb-6">Compila i dati generali e aggiungi i materiali richiesti</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="card p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="card p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <label className="label-field">Data richiesta</label>
             <input type="date" className="input-field" required value={requestDate} onChange={(e) => setRequestDate(e.target.value)} />
+          </div>
+          <div>
+            <label className="label-field">Stock</label>
+            <select className="input-field" required value={stockCode} onChange={(e) => setStockCode(e.target.value)}>
+              <option value="">Seleziona...</option>
+              {stockLocations.map((s) => (
+                <option key={s.id} value={s.code}>{s.technician_name} — {s.code}</option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="label-field">Spedizione</label>
