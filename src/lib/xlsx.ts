@@ -15,6 +15,8 @@ export function exportOrderToXlsx(order: OrderWithItems) {
     Fornitore: it.supplier ?? "",
     Spedizione: order.shipping,
     "Consegna Unica": order.delivery_single,
+    "Stock (Tecnico)": order.stock_technician ?? "",
+    "Stock (Codice)": order.stock_code ?? "",
     Note: order.notes ?? ""
   }));
 
@@ -22,7 +24,7 @@ export function exportOrderToXlsx(order: OrderWithItems) {
   ws["!cols"] = [
     { wch: 16 }, { wch: 11 }, { wch: 18 }, { wch: 14 }, { wch: 12 },
     { wch: 14 }, { wch: 36 }, { wch: 10 }, { wch: 12 }, { wch: 16 },
-    { wch: 12 }, { wch: 14 }, { wch: 30 }
+    { wch: 12 }, { wch: 14 }, { wch: 16 }, { wch: 14 }, { wch: 30 }
   ];
 
   const wb = XLSX.utils.book_new();
@@ -41,7 +43,9 @@ export function exportOrdersListToXlsx(orders: OrderWithItems[]) {
       Descrizione: it.material_description,
       Quantità: it.quantity,
       "Unità Misura": it.unit,
-      Fornitore: it.supplier ?? ""
+      Fornitore: it.supplier ?? "",
+      "Stock (Tecnico)": order.stock_technician ?? "",
+      "Stock (Codice)": order.stock_code ?? ""
     }))
   );
 

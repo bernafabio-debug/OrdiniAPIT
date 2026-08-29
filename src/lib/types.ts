@@ -20,6 +20,14 @@ export interface Material {
   created_at: string;
 }
 
+export interface StockLocation {
+  id: string;
+  technician_name: string;
+  code: string;
+  active: number;
+  created_at: string;
+}
+
 export type OrderStatus =
   | "Bozza"
   | "Inviato"
@@ -52,6 +60,8 @@ export interface Order {
   status: OrderStatus;
   delivery_single: "SI" | "NO";
   shipping: ShippingMethod;
+  stock_code: string | null;
+  stock_technician: string | null;
   notes: string | null;
   created_at: string;
   updated_at: string;
