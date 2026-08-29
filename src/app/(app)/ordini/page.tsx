@@ -108,7 +108,7 @@ export default function StoricoOrdiniPage() {
                   {o.order_number}
                 </button>
                 <p className="text-xs text-fluent-textMuted">
-                  {o.request_date} · {o.requester} · {o.shipping}
+                  {o.request_date} · {o.requester} · Stock {o.stock_technician ?? o.stock_code} · {o.shipping}
                 </p>
               </div>
               <div className="flex items-center gap-2">
