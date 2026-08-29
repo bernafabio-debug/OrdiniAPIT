@@ -13,7 +13,7 @@ export default function MaterialiPage() {
 
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Material | null>(null);
-  const [form, setForm] = useState({ code: "", description: "", supplier: "", unit: "pz", category: "" });
+  const [form, setForm] = useState({ code: "", description: "", supplier: "", unit: "pcs", category: "" });
   const [formError, setFormError] = useState("");
 
   const load = useCallback(async () => {
@@ -43,7 +43,7 @@ export default function MaterialiPage() {
 
   function openNew() {
     setEditing(null);
-    setForm({ code: "", description: "", supplier: "", unit: "pz", category: "" });
+    setForm({ code: "", description: "", supplier: "", unit: "pcs", category: "" });
     setFormError("");
     setShowForm(true);
   }
@@ -196,7 +196,10 @@ export default function MaterialiPage() {
               </div>
               <div>
                 <label className="label-field">Unità di misura</label>
-                <input className="input-field" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
+                <select className="input-field" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })}>
+                  <option value="pcs">pcs</option>
+                  <option value="mt">mt</option>
+                </select>
               </div>
               {formError && <p className="text-sm text-fluent-danger">{formError}</p>}
               <div className="flex justify-end gap-2 pt-2">
