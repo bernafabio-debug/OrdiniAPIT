@@ -68,6 +68,8 @@ export async function POST(req: NextRequest) {
     request_date: string;
     delivery_single: "SI" | "NO";
     shipping: "DHL" | "Collega" | "Altro";
+    stock_code?: string;
+    stock_technician?: string;
     notes?: string;
     status?: OrderStatus;
     items: Array<{
@@ -81,8 +83,8 @@ export async function POST(req: NextRequest) {
     }>;
   };
 
-  if (!body.request_date || !body.items || body.items.length === 0) {
-    return NextResponse.json({ error: "Data e almeno una riga materiale sono obbligatorie." }, { status: 400 });
+  if (!body.request_date || !body.stock_code || !body.items || body.items.length === 0) {
+    return NextResponse.json({ error: "Data, stock e almeno una riga materiale sono obbligatorie." }, { status: 400 });
   }
 
   const db = getDB();
@@ -94,8 +96,8 @@ export async function POST(req: NextRequest) {
     db
       .prepare(
         `INSERT INTO Orders
-         (id, order_number, requester, requester_id, request_date, status, delivery_single, shipping, notes)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+         (id, order_number, requester, requester_id, request_date, status, delivery_single, shipping, stock_code, stock_technician, notes)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .bind(
         orderId,
@@ -106,6 +108,8 @@ export async function POST(req: NextRequest) {
         status,
         body.delivery_single ?? "NO",
         body.shipping ?? "DHL",
+        body.stock_code,
+        body.stock_technician ?? null,
         body.notes ?? null
       ),
     ...body.items.map((it) =>
