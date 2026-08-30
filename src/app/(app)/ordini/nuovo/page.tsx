@@ -26,7 +26,7 @@ function emptyItem(): DraftItem {
     supplier: "",
     category: "",
     quantity: 1,
-    unit: "pz"
+    unit: "pcs"
   };
 }
 
@@ -205,11 +205,15 @@ export default function NuovoOrdinePage() {
                       className="input-field"
                       value={it.quantity}
                       onChange={(e) => updateItem(it.key, { quantity: Number(e.target.value) || 1 })}
+                      onFocus={(e) => e.target.select()}
                     />
                   </div>
                   <div>
                     <label className="label-field">Unità</label>
-                    <input className="input-field" value={it.unit} onChange={(e) => updateItem(it.key, { unit: e.target.value })} />
+                    <select className="input-field" value={it.unit} onChange={(e) => updateItem(it.key, { unit: e.target.value })}>
+                      <option value="pcs">pcs</option>
+                      <option value="mt">mt</option>
+                    </select>
                   </div>
                 </div>
               </div>
@@ -221,7 +225,7 @@ export default function NuovoOrdinePage() {
           <label className="label-field">Note (opzionale)</label>
           <textarea
             className="input-field min-h-[80px]"
-            placeholder="Riferimento commessa, urgenza, dettagli extra..."
+            placeholder="Cliente, urgenza, altre info..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
           />
