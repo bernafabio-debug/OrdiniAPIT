@@ -2,8 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import type { Material } from "@/lib/types";
-
-const SUPPLIERS = ["GmbH", "Provetec", "Optotec", "Quantatec", "Torquetec", "Tritec"];
+import { SUPPLIERS } from "@/lib/types";
 
 export default function MaterialiPage() {
   const [materials, setMaterials] = useState<Material[]>([]);
