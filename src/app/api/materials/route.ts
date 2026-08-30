@@ -44,11 +44,11 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ materials: results ?? [] });
 }
 
-// POST /api/materials — crea un nuovo materiale (solo admin)
+// POST /api/materials — crea un nuovo materiale (qualsiasi utente autenticato:
+// serve anche per aggiungere al volo un materiale non ancora a catalogo durante un nuovo ordine)
 export async function POST(req: NextRequest) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Non autenticato." }, { status: 401 });
-  if (session.role !== "admin") return NextResponse.json({ error: "Permesso negato." }, { status: 403 });
 
   const body = (await req.json()) as Partial<Material>;
   if (!body.code || !body.description) {
