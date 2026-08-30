@@ -73,8 +73,7 @@ export default function MaterialAutocomplete({
     setShowQuickAdd(true);
   }
 
-  async function submitQuickAdd(e: React.FormEvent) {
-    e.preventDefault();
+  async function submitQuickAdd() {
     setQuickAddError("");
     if (!quickAdd.code.trim() || !quickAdd.description.trim()) {
       setQuickAddError("Part Number e descrizione sono obbligatori.");
@@ -105,6 +104,15 @@ export default function MaterialAutocomplete({
       created_at: new Date().toISOString()
     });
     reset();
+  }
+
+  function handleQuickAddKeyDown(e: React.KeyboardEvent) {
+    // Evita che Invio faccia risalire l'evento al form dell'ordine (che lo racchiude)
+    if (e.key === "Enter") {
+      e.preventDefault();
+      e.stopPropagation();
+      submitQuickAdd();
+    }
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -177,7 +185,7 @@ export default function MaterialAutocomplete({
           )}
 
           {showQuickAdd && (
-            <form onSubmit={submitQuickAdd} className="p-3 space-y-2.5">
+            <div onKeyDown={handleQuickAddKeyDown} className="p-3 space-y-2.5">
               <p className="text-xs font-semibold text-fluent-text">Nuovo materiale a catalogo</p>
               <div>
                 <label className="label-field">Part Number</label>
@@ -232,11 +240,11 @@ export default function MaterialAutocomplete({
                 <button type="button" className="btn-secondary text-xs px-2.5 py-1.5" onClick={() => setShowQuickAdd(false)}>
                   Annulla
                 </button>
-                <button type="submit" className="btn-primary text-xs px-2.5 py-1.5" disabled={savingQuickAdd}>
+                <button type="button" className="btn-primary text-xs px-2.5 py-1.5" disabled={savingQuickAdd} onClick={submitQuickAdd}>
                   {savingQuickAdd ? "Salvataggio..." : "Salva e usa nell'ordine"}
                 </button>
               </div>
-            </form>
+            </div>
           )}
         </div>
       )}
