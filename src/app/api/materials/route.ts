@@ -3,7 +3,7 @@ import { getDB, newId } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import type { Material } from "@/lib/types";
 
-// GET /api/materials?q=filtro&category=Elettrico&active=1
+// GET /api/materials?q=filtro&category=Elettrico&supplier=GmbH&active=1
 export async function GET(req: NextRequest) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Non autenticato." }, { status: 401 });
@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const q = searchParams.get("q")?.trim() ?? "";
   const category = searchParams.get("category") ?? "";
+  const supplier = searchParams.get("supplier") ?? "";
   const activeParam = searchParams.get("active"); // "1" | "0" | null (tutti)
 
   const db = getDB();
@@ -24,6 +25,10 @@ export async function GET(req: NextRequest) {
   if (category) {
     sql += ` AND category = ?`;
     params.push(category);
+  }
+  if (supplier) {
+    sql += ` AND supplier = ?`;
+    params.push(supplier);
   }
   if (activeParam === "1" || activeParam === "0") {
     sql += ` AND active = ?`;
@@ -58,7 +63,7 @@ export async function POST(req: NextRequest) {
         `INSERT INTO Materials (id, code, description, supplier, unit, category, active)
          VALUES (?, ?, ?, ?, ?, ?, 1)`
       )
-      .bind(id, body.code.trim(), body.description.trim(), body.supplier ?? null, body.unit ?? "pz", body.category ?? null)
+      .bind(id, body.code.trim(), body.description.trim(), body.supplier ?? null, body.unit ?? "pcs", body.category ?? null)
       .run();
   } catch (e) {
     return NextResponse.json({ error: "Codice materiale già esistente." }, { status: 409 });
