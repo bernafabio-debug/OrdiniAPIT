@@ -3,17 +3,20 @@
 import { useEffect, useState, useCallback } from "react";
 import type { Material } from "@/lib/types";
 
+const SUPPLIERS = ["GmbH", "Provetec", "Optotec", "Quantatec", "Torquetec", "Tritec"];
+
 export default function MaterialiPage() {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
+  const [supplierFilter, setSupplierFilter] = useState("");
   const [activeFilter, setActiveFilter] = useState<"1" | "0" | "">("1");
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState<"user" | "admin">("user");
 
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Material | null>(null);
-  const [form, setForm] = useState({ code: "", description: "", supplier: "", unit: "pcs", category: "" });
+  const [form, setForm] = useState({ code: "", description: "", supplier: SUPPLIERS[0], unit: "pcs", category: "" });
   const [formError, setFormError] = useState("");
 
   const load = useCallback(async () => {
@@ -21,12 +24,13 @@ export default function MaterialiPage() {
     const params = new URLSearchParams();
     if (query) params.set("q", query);
     if (category) params.set("category", category);
+    if (supplierFilter) params.set("supplier", supplierFilter);
     if (activeFilter) params.set("active", activeFilter);
     const res = await fetch(`/api/materials?${params.toString()}`);
     const data = (await res.json()) as { materials: Material[] };
     setMaterials(data.materials ?? []);
     setLoading(false);
-  }, [query, category, activeFilter]);
+  }, [query, category, supplierFilter, activeFilter]);
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -43,7 +47,7 @@ export default function MaterialiPage() {
 
   function openNew() {
     setEditing(null);
-    setForm({ code: "", description: "", supplier: "", unit: "pcs", category: "" });
+    setForm({ code: "", description: "", supplier: SUPPLIERS[0], unit: "pcs", category: "" });
     setFormError("");
     setShowForm(true);
   }
@@ -53,7 +57,7 @@ export default function MaterialiPage() {
     setForm({
       code: m.code,
       description: m.description,
-      supplier: m.supplier ?? "",
+      supplier: m.supplier ?? SUPPLIERS[0],
       unit: m.unit,
       category: m.category ?? ""
     });
@@ -104,14 +108,20 @@ export default function MaterialiPage() {
       <div className="card p-4 mb-4 flex flex-wrap gap-3">
         <input
           className="input-field max-w-xs"
-          placeholder="Cerca codice, descrizione, fornitore..."
+          placeholder="Cerca part number, descrizione, fornitore..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
         <select className="input-field max-w-[180px]" value={category} onChange={(e) => setCategory(e.target.value)}>
-          <option value="">Tutte le categorie</option>
+          <option value="">Tutte le Product Line</option>
           {categories.map((c) => (
             <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+        <select className="input-field max-w-[160px]" value={supplierFilter} onChange={(e) => setSupplierFilter(e.target.value)}>
+          <option value="">Tutti i fornitori</option>
+          {SUPPLIERS.map((s) => (
+            <option key={s} value={s}>{s}</option>
           ))}
         </select>
         <select
@@ -129,10 +139,10 @@ export default function MaterialiPage() {
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-fluent-textMuted text-xs uppercase">
             <tr>
-              <th className="text-left px-4 py-2.5">Codice</th>
+              <th className="text-left px-4 py-2.5">Part Number</th>
               <th className="text-left px-4 py-2.5">Descrizione</th>
               <th className="text-left px-4 py-2.5">Fornitore</th>
-              <th className="text-left px-4 py-2.5">Categoria</th>
+              <th className="text-left px-4 py-2.5">Product Line</th>
               <th className="text-left px-4 py-2.5">Unità</th>
               <th className="text-left px-4 py-2.5">Stato</th>
               {role === "admin" && <th className="text-left px-4 py-2.5">Azioni</th>}
@@ -177,7 +187,7 @@ export default function MaterialiPage() {
             <h2 className="text-lg font-semibold mb-4">{editing ? "Modifica materiale" : "Nuovo materiale"}</h2>
             <form onSubmit={submitForm} className="space-y-3">
               <div>
-                <label className="label-field">Codice</label>
+                <label className="label-field">Part Number</label>
                 <input className="input-field" required value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} />
               </div>
               <div>
@@ -187,10 +197,14 @@ export default function MaterialiPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="label-field">Fornitore</label>
-                  <input className="input-field" value={form.supplier} onChange={(e) => setForm({ ...form, supplier: e.target.value })} />
+                  <select className="input-field" value={form.supplier} onChange={(e) => setForm({ ...form, supplier: e.target.value })}>
+                    {SUPPLIERS.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
-                  <label className="label-field">Categoria</label>
+                  <label className="label-field">Product Line</label>
                   <input className="input-field" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
                 </div>
               </div>
