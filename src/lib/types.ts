@@ -20,6 +20,9 @@ export interface Material {
   created_at: string;
 }
 
+export const SUPPLIERS = ["GmbH", "Provetec", "Optotec", "Quantatec", "Torquetec", "Tritec"];
+export const MATERIAL_UNITS = ["pcs", "mt"];
+
 export interface StockLocation {
   id: string;
   technician_name: string;
