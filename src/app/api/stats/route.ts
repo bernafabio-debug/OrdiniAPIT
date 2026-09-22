@@ -11,7 +11,7 @@ export async function GET() {
   const scopeClause = isAdmin ? "" : "AND o.requester_id = ?";
   const scopeParams = isAdmin ? [] : [session.sub];
 
-  const [openOrders, monthOrders, topMaterials, topSuppliers, byStatus, monthlyTrend] = await Promise.all([
+  const [openOrders, monthOrders, byProductLine, topSuppliers, byStock, monthlyTrend] = await Promise.all([
     db
       .prepare(
         `SELECT COUNT(*) as n FROM Orders o
@@ -28,13 +28,13 @@ export async function GET() {
       .first<{ n: number }>(),
     db
       .prepare(
-        `SELECT i.material_description as name, COUNT(*) as count
+        `SELECT i.category as name, COUNT(*) as count
          FROM OrderItems i
          JOIN Orders o ON o.id = i.order_id
-         WHERE 1=1 ${scopeClause}
-         GROUP BY i.material_code
+         WHERE i.category IS NOT NULL AND i.category != '' ${scopeClause}
+         GROUP BY i.category
          ORDER BY count DESC
-         LIMIT 5`
+         LIMIT 8`
       )
       .bind(...scopeParams)
       .all<{ name: string; count: number }>(),
@@ -52,7 +52,12 @@ export async function GET() {
       .all<{ name: string; count: number }>(),
     db
       .prepare(
-        `SELECT o.status as name, COUNT(*) as count FROM Orders o WHERE 1=1 ${scopeClause} GROUP BY o.status`
+        `SELECT COALESCE(o.stock_technician, o.stock_code) as name, COUNT(*) as count
+         FROM Orders o
+         WHERE o.stock_code IS NOT NULL ${scopeClause}
+         GROUP BY COALESCE(o.stock_technician, o.stock_code)
+         ORDER BY count DESC
+         LIMIT 15`
       )
       .bind(...scopeParams)
       .all<{ name: string; count: number }>(),
@@ -72,9 +77,9 @@ export async function GET() {
   return NextResponse.json({
     openOrders: openOrders?.n ?? 0,
     monthOrders: monthOrders?.n ?? 0,
-    topMaterials: topMaterials.results ?? [],
+    byProductLine: byProductLine.results ?? [],
     topSuppliers: topSuppliers.results ?? [],
-    byStatus: byStatus.results ?? [],
+    byStock: byStock.results ?? [],
     monthlyTrend: monthlyTrend.results ?? []
   });
 }
