@@ -17,10 +17,9 @@ type DraftItem = {
   unit: string;
 };
 
-function emptyItem(): DraftItem {
+function emptyEntry() {
   return {
-    key: crypto.randomUUID(),
-    item_type: "Consumabile",
+    item_type: "Consumabile" as ItemType,
     material_code: "",
     material_description: "",
     supplier: "",
@@ -40,7 +39,15 @@ export default function NuovoOrdinePage() {
   const [stockLocations, setStockLocations] = useState<StockLocation[]>([]);
   const [stockCode, setStockCode] = useState("");
   const [notes, setNotes] = useState("");
-  const [items, setItems] = useState<DraftItem[]>([emptyItem()]);
+
+  // Riga in compilazione (non ancora inserita nella tabella)
+  const [entry, setEntry] = useState(emptyEntry());
+  const [entryError, setEntryError] = useState("");
+  const [autocompleteKey, setAutocompleteKey] = useState(0); // forza il reset del campo di ricerca dopo ogni inserimento
+
+  // Righe già inserite (quelle che finiranno nell'ordine)
+  const [rows, setRows] = useState<DraftItem[]>([]);
+
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -50,35 +57,46 @@ export default function NuovoOrdinePage() {
       .then((d) => setStockLocations((d as { stockLocations: StockLocation[] }).stockLocations ?? []));
   }, []);
 
-  function updateItem(key: string, patch: Partial<DraftItem>) {
-    setItems((prev) => prev.map((it) => (it.key === key ? { ...it, ...patch } : it)));
-  }
-
-  function selectMaterial(key: string, m: Material) {
-    updateItem(key, {
+  function selectMaterial(m: Material) {
+    setEntry((prev) => ({
+      ...prev,
       material_code: m.code,
       material_description: m.description,
       supplier: m.supplier ?? "",
       category: m.category ?? "",
       unit: m.unit
-    });
+    }));
+    setEntryError("");
   }
 
-  function addRow() {
-    setItems((prev) => [...prev, emptyItem()]);
+  function handleInsert() {
+    setEntryError("");
+    if (!entry.material_code || !entry.material_description) {
+      setEntryError("Seleziona un materiale dall'elenco (o aggiungilo al volo) prima di inserire la riga.");
+      return;
+    }
+    if (!entry.quantity || entry.quantity <= 0) {
+      setEntryError("Inserisci una quantità valida.");
+      return;
+    }
+
+    setRows((prev) => [...prev, { ...entry, key: crypto.randomUUID() }]);
+
+    // libera i campi per il prossimo inserimento
+    setEntry(emptyEntry());
+    setAutocompleteKey((k) => k + 1);
   }
 
   function removeRow(key: string) {
-    setItems((prev) => (prev.length > 1 ? prev.filter((it) => it.key !== key) : prev));
+    setRows((prev) => prev.filter((r) => r.key !== key));
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
 
-    const validItems = items.filter((it) => it.material_code && it.material_description);
-    if (validItems.length === 0) {
-      setError("Aggiungi almeno un materiale valido (seleziona dal catalogo).");
+    if (rows.length === 0) {
+      setError("Inserisci almeno un materiale nella tabella prima di generare l'ordine.");
       return;
     }
     if (!stockCode) {
@@ -99,7 +117,7 @@ export default function NuovoOrdinePage() {
         stock_code: stockCode,
         stock_technician: selectedStock?.technician_name ?? "",
         notes,
-        items: validItems.map((it) => ({
+        items: rows.map((it) => ({
           material_code: it.material_code,
           material_description: it.material_description,
           quantity: it.quantity,
@@ -159,66 +177,98 @@ export default function NuovoOrdinePage() {
         </div>
 
         <div className="card p-5">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-fluent-text">Righe materiale</h2>
-            <button type="button" className="btn-secondary" onClick={addRow}>+ Aggiungi riga</button>
-          </div>
+          <h2 className="text-sm font-semibold text-fluent-text mb-1">Righe materiale</h2>
+          <p className="text-xs text-fluent-textMuted mb-4">
+            Compila i campi qui sotto e premi &quot;Inserisci&quot;: la riga entra nella tabella e i campi si liberano per il materiale successivo.
+          </p>
 
-          <div className="space-y-4">
-            {items.map((it, idx) => (
-              <div key={it.key} className="border border-fluent-border rounded-md p-4 bg-gray-50/50">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-semibold text-fluent-accent">Riga {idx + 1}</span>
-                  {items.length > 1 && (
-                    <button type="button" className="text-xs text-fluent-danger" onClick={() => removeRow(it.key)}>
-                      Rimuovi
-                    </button>
-                  )}
-                </div>
+          {/* ---- Zona di compilazione riga corrente ---- */}
+          <div className="border border-fluent-border rounded-md p-4 bg-gray-50/50 mb-4">
+            <div className="mb-3">
+              <label className="label-field">Materiale</label>
+              <MaterialAutocomplete key={autocompleteKey} onSelect={selectMaterial} />
+              {entry.material_code && (
+                <p className="text-xs text-fluent-textMuted mt-1.5">
+                  Selezionato: <strong>{entry.material_code}</strong> — {entry.material_description}
+                  {entry.supplier && ` · ${entry.supplier}`}
+                </p>
+              )}
+            </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-                  <div className="sm:col-span-2">
-                    <label className="label-field">Materiale</label>
-                    <MaterialAutocomplete onSelect={(m) => selectMaterial(it.key, m)} />
-                    {it.material_code && (
-                      <p className="text-xs text-fluent-textMuted mt-1.5">
-                        Selezionato: <strong>{it.material_code}</strong> — {it.material_description}
-                        {it.supplier && ` · ${it.supplier}`}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label className="label-field">Tipo</label>
-                    <select className="input-field" value={it.item_type} onChange={(e) => updateItem(it.key, { item_type: e.target.value as ItemType })}>
-                      {ITEM_TYPES.map((t) => (<option key={t} value={t}>{t}</option>))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="label-field">Quantità</label>
-                    <input
-                      type="number"
-                      min={1}
-                      step="any"
-                      className="input-field"
-                      value={it.quantity}
-                      onChange={(e) => updateItem(it.key, { quantity: Number(e.target.value) || 1 })}
-                      onFocus={(e) => e.target.select()}
-                    />
-                  </div>
-                  <div>
-                    <label className="label-field">Unità</label>
-                    <select className="input-field" value={it.unit} onChange={(e) => updateItem(it.key, { unit: e.target.value })}>
-                      <option value="pcs">pcs</option>
-                      <option value="mt">mt</option>
-                    </select>
-                  </div>
-                </div>
+            <div className="grid grid-cols-3 gap-3 mb-3">
+              <div>
+                <label className="label-field">Tipo</label>
+                <select
+                  className="input-field"
+                  value={entry.item_type}
+                  onChange={(e) => setEntry({ ...entry, item_type: e.target.value as ItemType })}
+                >
+                  {ITEM_TYPES.map((t) => (<option key={t} value={t}>{t}</option>))}
+                </select>
               </div>
-            ))}
+              <div>
+                <label className="label-field">Quantità</label>
+                <input
+                  type="number"
+                  min={1}
+                  step="any"
+                  className="input-field"
+                  value={entry.quantity}
+                  onChange={(e) => setEntry({ ...entry, quantity: Number(e.target.value) || 1 })}
+                  onFocus={(e) => e.target.select()}
+                />
+              </div>
+              <div>
+                <label className="label-field">Unità</label>
+                <select className="input-field" value={entry.unit} onChange={(e) => setEntry({ ...entry, unit: e.target.value })}>
+                  <option value="pcs">pcs</option>
+                  <option value="mt">mt</option>
+                </select>
+              </div>
+            </div>
+
+            {entryError && <p className="text-xs text-fluent-danger mb-2">{entryError}</p>}
+
+            <button type="button" className="btn-primary" onClick={handleInsert}>
+              + Inserisci
+            </button>
           </div>
+
+          {/* ---- Tabella delle righe già inserite ---- */}
+          {rows.length === 0 ? (
+            <p className="text-sm text-fluent-textMuted text-center py-6">Nessun materiale inserito ancora.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 text-fluent-textMuted text-xs uppercase">
+                  <tr>
+                    <th className="text-left px-3 py-2">Tipo</th>
+                    <th className="text-left px-3 py-2">Part Number</th>
+                    <th className="text-left px-3 py-2">Descrizione</th>
+                    <th className="text-left px-3 py-2">Quantità</th>
+                    <th className="text-left px-3 py-2">Unità</th>
+                    <th className="text-left px-3 py-2"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r) => (
+                    <tr key={r.key} className="border-t border-fluent-border">
+                      <td className="px-3 py-2">{r.item_type}</td>
+                      <td className="px-3 py-2 font-medium">{r.material_code}</td>
+                      <td className="px-3 py-2">{r.material_description}</td>
+                      <td className="px-3 py-2">{r.quantity}</td>
+                      <td className="px-3 py-2">{r.unit}</td>
+                      <td className="px-3 py-2 text-right">
+                        <button type="button" className="text-xs text-fluent-danger" onClick={() => removeRow(r.key)}>
+                          Rimuovi
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         <div className="card p-5">
