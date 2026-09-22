@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from "react";
 import StatCard from "@/components/StatCard";
-import { TopBarChart, StatusPieChart, MonthlyTrendChart } from "@/components/Charts";
+import { TopBarChart, MonthlyTrendChart } from "@/components/Charts";
 
 type Stats = {
   openOrders: number;
   monthOrders: number;
-  topMaterials: Array<{ name: string; count: number }>;
+  byProductLine: Array<{ name: string; count: number }>;
   topSuppliers: Array<{ name: string; count: number }>;
-  byStatus: Array<{ name: string; count: number }>;
+  byStock: Array<{ name: string; count: number }>;
   monthlyTrend: Array<{ month: string; count: number }>;
 };
 
@@ -40,8 +40,8 @@ export default function DashboardPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
             <div className="card p-5">
-              <h2 className="text-sm font-semibold text-fluent-text mb-3">Materiali più richiesti</h2>
-              <TopBarChart data={stats?.topMaterials ?? []} />
+              <h2 className="text-sm font-semibold text-fluent-text mb-3">Ordini per Product Line</h2>
+              <TopBarChart data={stats?.byProductLine ?? []} />
             </div>
             <div className="card p-5">
               <h2 className="text-sm font-semibold text-fluent-text mb-3">Fornitori più utilizzati</h2>
@@ -51,8 +51,8 @@ export default function DashboardPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="card p-5">
-              <h2 className="text-sm font-semibold text-fluent-text mb-3">Ordini per stato</h2>
-              <StatusPieChart data={stats?.byStatus ?? []} />
+              <h2 className="text-sm font-semibold text-fluent-text mb-3">Ordini per Stock</h2>
+              <TopBarChart data={stats?.byStock ?? []} />
             </div>
             <div className="card p-5">
               <h2 className="text-sm font-semibold text-fluent-text mb-3">Andamento mensile</h2>
