@@ -6,6 +6,7 @@ import {
   XAxis,
   YAxis,
   Tooltip,
+  Legend,
   ResponsiveContainer,
   PieChart,
   Pie,
@@ -68,6 +69,26 @@ export function MonthlyTrendChart({ data }: { data: Array<{ month: string; count
         <Tooltip />
         <Line type="monotone" dataKey="count" stroke="#CC0001" strokeWidth={2} dot={{ r: 3 }} />
       </LineChart>
+    </ResponsiveContainer>
+  );
+}
+
+// Barre raggruppate pcs/mt: usato quando le quantità non sono sommabili tra loro
+// perché espresse in unità diverse (es. Ordini per Product Line, Ordini per Stock).
+export function GroupedUnitBarChart({ data }: { data: Array<{ name: string; pcs: number; mt: number }> }) {
+  if (!data || data.length === 0) {
+    return <p className="text-sm text-fluent-textMuted py-8 text-center">Nessun dato disponibile.</p>;
+  }
+  return (
+    <ResponsiveContainer width="100%" height={Math.max(220, data.length * 34)}>
+      <BarChart data={data} layout="vertical" margin={{ left: 8, right: 16 }}>
+        <XAxis type="number" allowDecimals={false} tick={{ fontSize: 12 }} />
+        <YAxis type="category" dataKey="name" width={140} tick={{ fontSize: 12 }} />
+        <Tooltip />
+        <Legend wrapperStyle={{ fontSize: 12 }} />
+        <Bar dataKey="pcs" name="pcs" fill="#CC0001" radius={[0, 4, 4, 0]} />
+        <Bar dataKey="mt" name="mt" fill="#605e5c" radius={[0, 4, 4, 0]} />
+      </BarChart>
     </ResponsiveContainer>
   );
 }
