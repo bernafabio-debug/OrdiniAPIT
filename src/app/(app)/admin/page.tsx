@@ -10,6 +10,11 @@ export default function AdminPage() {
   const [userForm, setUserForm] = useState({ email: "", name: "", password: "", role: "user" as UserRole });
   const [userError, setUserError] = useState("");
 
+  const [passwordTarget, setPasswordTarget] = useState<User | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [savingPassword, setSavingPassword] = useState(false);
+
   const [stockLocations, setStockLocations] = useState<StockLocation[]>([]);
   const [loadingStock, setLoadingStock] = useState(true);
   const [showStockForm, setShowStockForm] = useState(false);
@@ -76,6 +81,36 @@ export default function AdminPage() {
       body: JSON.stringify({ role: u.role === "admin" ? "user" : "admin" })
     });
     loadUsers();
+  }
+
+  function openPasswordChange(u: User) {
+    setPasswordTarget(u);
+    setNewPassword("");
+    setPasswordError("");
+  }
+
+  async function submitPasswordChange(e: React.FormEvent) {
+    e.preventDefault();
+    if (!passwordTarget) return;
+    setPasswordError("");
+    if (newPassword.length < 8) {
+      setPasswordError("La password deve avere almeno 8 caratteri.");
+      return;
+    }
+    setSavingPassword(true);
+    const res = await fetch(`/api/users/${passwordTarget.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: newPassword })
+    });
+    setSavingPassword(false);
+    if (!res.ok) {
+      const data = (await res.json()) as { error?: string };
+      setPasswordError(data.error || "Errore durante il salvataggio.");
+      return;
+    }
+    setPasswordTarget(null);
+    setNewPassword("");
   }
 
   function openNewStock() {
@@ -161,6 +196,9 @@ export default function AdminPage() {
                   <td className="px-4 py-2.5 space-x-2">
                     <button className="text-fluent-accent hover:underline" onClick={() => toggleUserRole(u)}>
                       {u.role === "admin" ? "Rendi utente" : "Rendi admin"}
+                    </button>
+                    <button className="text-fluent-accent hover:underline" onClick={() => openPasswordChange(u)}>
+                      Cambia password
                     </button>
                     <button className="text-fluent-textMuted hover:underline" onClick={() => toggleUserActive(u)}>
                       {u.active ? "Disattiva" : "Riattiva"}
@@ -267,6 +305,39 @@ export default function AdminPage() {
               <div className="flex justify-end gap-2 pt-2">
                 <button type="button" className="btn-secondary" onClick={() => setShowStockForm(false)}>Annulla</button>
                 <button type="submit" className="btn-primary">Salva</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {passwordTarget && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+            <h2 className="text-lg font-semibold mb-1">Cambia password</h2>
+            <p className="text-sm text-fluent-textMuted mb-4">
+              {passwordTarget.name} — <span className="text-xs">{passwordTarget.email}</span>
+            </p>
+            <form onSubmit={submitPasswordChange} className="space-y-3">
+              <div>
+                <label className="label-field">Nuova password</label>
+                <input
+                  type="text"
+                  className="input-field"
+                  required
+                  minLength={8}
+                  autoFocus
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Almeno 8 caratteri"
+                />
+              </div>
+              {passwordError && <p className="text-sm text-fluent-danger">{passwordError}</p>}
+              <div className="flex justify-end gap-2 pt-2">
+                <button type="button" className="btn-secondary" onClick={() => setPasswordTarget(null)}>Annulla</button>
+                <button type="submit" className="btn-primary" disabled={savingPassword}>
+                  {savingPassword ? "Salvataggio..." : "Salva nuova password"}
+                </button>
               </div>
             </form>
           </div>
