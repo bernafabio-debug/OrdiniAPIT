@@ -14,7 +14,7 @@
     "db:migrate:remote": "wrangler d1 execute po_manager_db --remote --file=./migrations/0001_init.sql && wrangler d1 execute po_manager_db --remote --file=./migrations/0002_seed.sql"
   },
   "dependencies": {
-    "next": "15.5.24",
+    "next": "15.5.26",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "recharts": "^2.12.7",
@@ -33,7 +33,7 @@
     "postcss": "^8.4.40",
     "autoprefixer": "^10.4.19",
     "wrangler": "^4.125.0",
-    "@opennextjs/cloudflare": "^1.20.4",
+    "@opennextjs/cloudflare": "1.20.7",
     "@cloudflare/workers-types": "^5.20260828.1"
   }
 }
