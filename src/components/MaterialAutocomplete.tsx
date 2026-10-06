@@ -99,6 +99,7 @@ export default function MaterialAutocomplete({
       description: quickAdd.description.trim(),
       supplier: quickAdd.supplier,
       category: quickAdd.category || null,
+      instrument: null,
       unit: quickAdd.unit,
       active: 1,
       created_at: new Date().toISOString()

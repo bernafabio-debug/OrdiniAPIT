@@ -8,6 +8,7 @@ import {
   FilePlus2,
   History,
   ShieldCheck,
+  Warehouse,
   LogOut
 } from "lucide-react";
 
@@ -16,6 +17,7 @@ const NAV_ITEMS = [
   { href: "/ordini", label: "Storico Ordini", icon: History, adminOnly: false },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, adminOnly: false },
   { href: "/materiali", label: "Catalogo Materiali", icon: Package, adminOnly: false },
+  { href: "/stock", label: "Il mio Stock", icon: Warehouse, adminOnly: false },
   { href: "/admin", label: "Amministrazione", icon: ShieldCheck, adminOnly: true }
 ];
 
