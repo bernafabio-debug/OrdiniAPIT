@@ -32,10 +32,8 @@ export default function Sidebar({ role, name }: { role: "user" | "admin"; name: 
   return (
     <aside className="w-60 shrink-0 bg-fluent-sidebar text-white flex flex-col h-screen sticky top-0">
       <div className="px-5 py-5 border-b border-white/10">
-        <div className="border-2 border-white bg-white px-4 py-3 flex items-center justify-center">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-anton-paar-dark.png" alt="Anton Paar" className="h-10 w-auto object-contain" />
-        </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo-anton-paar.png" alt="Anton Paar" className="w-full h-auto object-contain" />
         <p className="mt-3 font-bold text-base">Order&amp;Stock manager</p>
         <p className="font-mono text-xs tracking-wide text-gray-400">Anton Paar Italia</p>
       </div>
