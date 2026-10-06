@@ -3,20 +3,26 @@ import { getDB, newId } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import type { StockLocation } from "@/lib/types";
 
-// GET /api/stock-locations?active=1 — lista destinazioni (qualsiasi utente autenticato)
+// GET /api/stock-locations?active=1&mine=1 — lista destinazioni (qualsiasi utente autenticato)
+// mine=1 -> restituisce solo gli stock di cui l'utente corrente è proprietario (per "Il mio Stock")
 export async function GET(req: NextRequest) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Non autenticato." }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
   const activeParam = searchParams.get("active");
+  const mine = searchParams.get("mine") === "1";
 
   const db = getDB();
   let sql = `SELECT * FROM StockLocations WHERE 1=1`;
-  const params: number[] = [];
+  const params: (number | string)[] = [];
   if (activeParam === "1" || activeParam === "0") {
     sql += ` AND active = ?`;
     params.push(Number(activeParam));
+  }
+  if (mine) {
+    sql += ` AND owner_user_id = ?`;
+    params.push(session.sub);
   }
   sql += ` ORDER BY technician_name ASC`;
 
@@ -39,8 +45,10 @@ export async function POST(req: NextRequest) {
   const id = newId("stock");
   try {
     await db
-      .prepare(`INSERT INTO StockLocations (id, technician_name, code, active) VALUES (?, ?, ?, 1)`)
-      .bind(id, body.technician_name.trim(), body.code.trim())
+      .prepare(
+        `INSERT INTO StockLocations (id, technician_name, code, active, owner_user_id) VALUES (?, ?, ?, 1, ?)`
+      )
+      .bind(id, body.technician_name.trim(), body.code.trim(), body.owner_user_id ?? null)
       .run();
   } catch {
     return NextResponse.json({ error: "Codice già esistente." }, { status: 409 });
