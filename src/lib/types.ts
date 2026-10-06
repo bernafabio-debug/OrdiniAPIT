@@ -16,6 +16,7 @@ export interface Material {
   supplier: string | null;
   unit: string;
   category: string | null;
+  instrument: string | null;
   active: number;
   created_at: string;
 }
@@ -28,7 +29,25 @@ export interface StockLocation {
   technician_name: string;
   code: string;
   active: number;
+  owner_user_id: string | null;
   created_at: string;
+}
+
+export interface StockInventoryItem {
+  id: string;
+  stock_code: string;
+  material_code: string;
+  quantity: number;
+  min_stock: number;
+  note: string | null;
+  created_at: string;
+  updated_at: string;
+  // Campi uniti dal catalogo Materiali (join in sola lettura)
+  description: string;
+  unit: string;
+  category: string | null; // Product Line
+  instrument: string | null;
+  supplier: string | null;
 }
 
 export type OrderStatus =
