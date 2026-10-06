@@ -19,7 +19,7 @@ export default function AdminPage() {
   const [loadingStock, setLoadingStock] = useState(true);
   const [showStockForm, setShowStockForm] = useState(false);
   const [editingStock, setEditingStock] = useState<StockLocation | null>(null);
-  const [stockForm, setStockForm] = useState({ technician_name: "", code: "" });
+  const [stockForm, setStockForm] = useState({ technician_name: "", code: "", owner_user_id: "" });
   const [stockError, setStockError] = useState("");
 
   async function loadUsers() {
@@ -115,14 +115,14 @@ export default function AdminPage() {
 
   function openNewStock() {
     setEditingStock(null);
-    setStockForm({ technician_name: "", code: "" });
+    setStockForm({ technician_name: "", code: "", owner_user_id: "" });
     setStockError("");
     setShowStockForm(true);
   }
 
   function openEditStock(s: StockLocation) {
     setEditingStock(s);
-    setStockForm({ technician_name: s.technician_name, code: s.code });
+    setStockForm({ technician_name: s.technician_name, code: s.code, owner_user_id: s.owner_user_id ?? "" });
     setStockError("");
     setShowStockForm(true);
   }
@@ -135,7 +135,7 @@ export default function AdminPage() {
     const res = await fetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(stockForm)
+      body: JSON.stringify({ ...stockForm, owner_user_id: stockForm.owner_user_id || null })
     });
     if (!res.ok) {
       const data = (await res.json()) as { error?: string };
@@ -226,29 +226,36 @@ export default function AdminPage() {
               <tr>
                 <th className="text-left px-4 py-2.5">Tecnico</th>
                 <th className="text-left px-4 py-2.5">Codice</th>
+                <th className="text-left px-4 py-2.5">Utente assegnato</th>
                 <th className="text-left px-4 py-2.5">Stato</th>
                 <th className="text-left px-4 py-2.5">Azioni</th>
               </tr>
             </thead>
             <tbody>
-              {loadingStock && <tr><td colSpan={4} className="px-4 py-6 text-center text-fluent-textMuted">Caricamento...</td></tr>}
-              {!loadingStock && stockLocations.map((s) => (
-                <tr key={s.id} className="border-t border-fluent-border">
-                  <td className="px-4 py-2.5 font-medium">{s.technician_name}</td>
-                  <td className="px-4 py-2.5">{s.code}</td>
-                  <td className="px-4 py-2.5">
-                    <span className={`badge ${s.active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
-                      {s.active ? "Attivo" : "Disattivato"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2.5 space-x-2">
-                    <button className="text-fluent-accent hover:underline" onClick={() => openEditStock(s)}>Modifica</button>
-                    <button className="text-fluent-textMuted hover:underline" onClick={() => toggleStockActive(s)}>
-                      {s.active ? "Disattiva" : "Riattiva"}
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {loadingStock && <tr><td colSpan={5} className="px-4 py-6 text-center text-fluent-textMuted">Caricamento...</td></tr>}
+              {!loadingStock && stockLocations.map((s) => {
+                const owner = users.find((u) => u.id === s.owner_user_id);
+                return (
+                  <tr key={s.id} className="border-t border-fluent-border">
+                    <td className="px-4 py-2.5 font-medium">{s.technician_name}</td>
+                    <td className="px-4 py-2.5">{s.code}</td>
+                    <td className="px-4 py-2.5">
+                      {owner ? owner.name : <span className="text-fluent-textMuted">Non assegnato</span>}
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <span className={`badge ${s.active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                        {s.active ? "Attivo" : "Disattivato"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2.5 space-x-2">
+                      <button className="text-fluent-accent hover:underline" onClick={() => openEditStock(s)}>Modifica</button>
+                      <button className="text-fluent-textMuted hover:underline" onClick={() => toggleStockActive(s)}>
+                        {s.active ? "Disattiva" : "Riattiva"}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -300,6 +307,22 @@ export default function AdminPage() {
               <div>
                 <label className="label-field">Codice</label>
                 <input className="input-field" required value={stockForm.code} onChange={(e) => setStockForm({ ...stockForm, code: e.target.value })} />
+              </div>
+              <div>
+                <label className="label-field">Utente assegnato</label>
+                <select
+                  className="input-field"
+                  value={stockForm.owner_user_id}
+                  onChange={(e) => setStockForm({ ...stockForm, owner_user_id: e.target.value })}
+                >
+                  <option value="">Nessuno</option>
+                  {users.map((u) => (
+                    <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
+                  ))}
+                </select>
+                <p className="text-xs text-fluent-textMuted mt-1">
+                  Determina chi vede/modifica questo stock in &quot;Il mio Stock&quot;.
+                </p>
               </div>
               {stockError && <p className="text-sm text-fluent-danger">{stockError}</p>}
               <div className="flex justify-end gap-2 pt-2">
