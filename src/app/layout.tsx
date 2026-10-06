@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "PO Manager Service",
+  title: "Order&Stock manager - APIT",
   description: "Gestione richieste di acquisto materiali"
 };
 
