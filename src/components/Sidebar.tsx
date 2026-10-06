@@ -34,7 +34,7 @@ export default function Sidebar({ role, name }: { role: "user" | "admin"; name: 
       <div className="px-5 py-5 flex items-center gap-2 border-b border-white/10">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo.jpg" alt="Logo aziendale" className="w-8 h-8 rounded-lg object-cover shrink-0" />
-        <span className="font-semibold text-sm">PO Manager Service</span>
+        <span className="font-semibold text-sm">Order&amp;Stock manager</span>
       </div>
 
       <nav className="flex-1 py-3 px-2 space-y-0.5">
