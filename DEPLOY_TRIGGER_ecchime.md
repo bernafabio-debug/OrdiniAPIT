@@ -1,1 +1,1 @@
-Cloudflare deployment trigger.
+Cloudflare deployment trigger, speriamo funzioni.
