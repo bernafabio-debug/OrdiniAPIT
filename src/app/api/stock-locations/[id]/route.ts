@@ -14,8 +14,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const db = getDB();
   await db
-    .prepare(`UPDATE StockLocations SET technician_name = ?, code = ? WHERE id = ?`)
-    .bind(body.technician_name, body.code, id)
+    .prepare(`UPDATE StockLocations SET technician_name = ?, code = ?, owner_user_id = ? WHERE id = ?`)
+    .bind(body.technician_name, body.code, body.owner_user_id ?? null, id)
     .run();
 
   return NextResponse.json({ ok: true });
