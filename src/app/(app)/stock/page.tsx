@@ -1,10 +1,41 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import type { StockInventoryItem, StockLocation } from "@/lib/types";
 import { MATERIAL_UNITS } from "@/lib/types";
 
 type Me = { id: string; role: "user" | "admin" } | null;
+type SortKey = "material_code" | "description" | "category" | "min_stock" | "quantity" | "unit";
+type SortDir = "asc" | "desc";
+
+function SortableTh({
+  label,
+  sortKey: key,
+  width,
+  align = "left",
+  sortKeyActive,
+  sortDir,
+  onSort
+}: {
+  label: string;
+  sortKey: SortKey;
+  width: string;
+  align?: "left" | "right";
+  sortKeyActive: SortKey;
+  sortDir: SortDir;
+  onSort: (key: SortKey) => void;
+}) {
+  const active = sortKeyActive === key;
+  return (
+    <th
+      className={`px-4 py-2.5 cursor-pointer hover:text-fluent-text ${width} ${align === "right" ? "text-right" : "text-left"}`}
+      onClick={() => onSort(key)}
+    >
+      {label}
+      {active ? (sortDir === "asc" ? " ▲" : " ▼") : ""}
+    </th>
+  );
+}
 
 export default function StockPage() {
   const [me, setMe] = useState<Me>(null);
@@ -26,6 +57,11 @@ export default function StockPage() {
   const [addForm, setAddForm] = useState({ description: "", unit: "pcs", category: "", instrument: "", quantity: "0", min_stock: "0", note: "" });
   const [addError, setAddError] = useState("");
   const [addSaving, setAddSaving] = useState(false);
+
+  const [search, setSearch] = useState("");
+  const [productLineFilter, setProductLineFilter] = useState("");
+  const [sortKey, setSortKey] = useState<SortKey>("material_code");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
 
   // Utente corrente + stock assegnati
   useEffect(() => {
@@ -79,8 +115,50 @@ export default function StockPage() {
     if (selectedCode) loadItems(selectedCode);
   }, [selectedCode, loadItems]);
 
-  const selectorOptions = me?.role === "admin" ? allLocations : myLocations;
+  // APIT è uno stock "tecnico" generico: non va assegnato a nessuno, quindi non compare tra le opzioni selezionabili
+  const selectorOptions = (me?.role === "admin" ? allLocations : myLocations).filter(
+    (s) => s.technician_name.trim().toUpperCase() !== "APIT"
+  );
   const selectedLocation = selectorOptions.find((s) => s.code === selectedCode);
+
+  function toggleSort(key: SortKey) {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  }
+
+  const productLines = useMemo(
+    () => Array.from(new Set(items.map((i) => i.category).filter(Boolean))) as string[],
+    [items]
+  );
+
+  const visibleItems = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    let rows = items.filter((item) => {
+      if (productLineFilter && item.category !== productLineFilter) return false;
+      if (!q) return true;
+      return (
+        item.material_code.toLowerCase().includes(q) ||
+        item.description.toLowerCase().includes(q) ||
+        (item.note ?? "").toLowerCase().includes(q)
+      );
+    });
+    rows = [...rows].sort((a, b) => {
+      const av = a[sortKey];
+      const bv = b[sortKey];
+      let cmp: number;
+      if (typeof av === "number" && typeof bv === "number") {
+        cmp = av - bv;
+      } else {
+        cmp = String(av ?? "").localeCompare(String(bv ?? ""));
+      }
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return rows;
+  }, [items, search, productLineFilter, sortKey, sortDir]);
 
   function openEdit(item: StockInventoryItem) {
     setEditing(item);
@@ -220,58 +298,69 @@ export default function StockPage() {
       )}
 
       {selectedCode && (
-        <div className="card overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-fluent-textMuted text-xs uppercase">
-              <tr>
-                <th className="text-left px-4 py-2.5">Part Number</th>
-                <th className="text-left px-4 py-2.5">Descrizione</th>
-                <th className="text-left px-4 py-2.5">Instrument</th>
-                <th className="text-left px-4 py-2.5">Product Line</th>
-                <th className="text-right px-4 py-2.5">Min</th>
-                <th className="text-right px-4 py-2.5">Quantità</th>
-                <th className="text-left px-4 py-2.5">UM</th>
-                <th className="text-right px-4 py-2.5">Mancante</th>
-                <th className="text-left px-4 py-2.5">Note</th>
-                <th className="text-left px-4 py-2.5">Azioni</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading && (
-                <tr><td colSpan={10} className="px-4 py-6 text-center text-fluent-textMuted">Caricamento...</td></tr>
-              )}
-              {!loading && items.length === 0 && (
-                <tr><td colSpan={10} className="px-4 py-6 text-center text-fluent-textMuted">Nessun materiale in questo stock.</td></tr>
-              )}
-              {items.map((item) => {
-                const missing = Math.max(0, item.min_stock - item.quantity);
-                return (
-                  <tr key={item.id} className={`border-t border-fluent-border ${missing > 0 ? "bg-red-50" : ""}`}>
-                    <td className="px-4 py-2.5 font-medium">{item.material_code}</td>
-                    <td className="px-4 py-2.5">{item.description}</td>
-                    <td className="px-4 py-2.5">{item.instrument}</td>
-                    <td className="px-4 py-2.5">{item.category}</td>
-                    <td className="px-4 py-2.5 text-right">{item.min_stock}</td>
-                    <td className="px-4 py-2.5 text-right">{item.quantity}</td>
-                    <td className="px-4 py-2.5">{item.unit}</td>
-                    <td className="px-4 py-2.5 text-right">
-                      {missing > 0 ? (
-                        <span className="badge bg-red-100 text-red-700">{missing}</span>
-                      ) : (
-                        <span className="text-fluent-textMuted">0</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2.5 text-fluent-textMuted">{item.note}</td>
-                    <td className="px-4 py-2.5 space-x-2 whitespace-nowrap">
-                      <button className="text-fluent-accent hover:underline" onClick={() => openEdit(item)}>Modifica</button>
-                      <button className="text-fluent-textMuted hover:underline" onClick={() => removeItem(item)}>Rimuovi</button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <>
+          <div className="card p-4 mb-4 flex flex-wrap gap-3">
+            <input
+              className="input-field max-w-xs"
+              placeholder="Cerca PN, descrizione, note..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <select
+              className="input-field max-w-[180px]"
+              value={productLineFilter}
+              onChange={(e) => setProductLineFilter(e.target.value)}
+            >
+              <option value="">Tutte le PL</option>
+              {productLines.map((pl) => (
+                <option key={pl} value={pl}>{pl}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="card overflow-hidden">
+            <table className="w-full text-sm table-fixed">
+              <thead className="bg-gray-50 text-fluent-textMuted text-xs uppercase select-none">
+                <tr>
+                  <SortableTh label="PN" sortKey="material_code" width="w-24" sortKeyActive={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                  <SortableTh label="Descrizione" sortKey="description" width="w-56" sortKeyActive={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                  <SortableTh label="PL" sortKey="category" width="w-24" sortKeyActive={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                  <SortableTh label="Min" sortKey="min_stock" width="w-16" align="right" sortKeyActive={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                  <SortableTh label="Quantità" sortKey="quantity" width="w-20" align="right" sortKeyActive={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                  <SortableTh label="UM" sortKey="unit" width="w-14" sortKeyActive={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                  <th className="text-left px-4 py-2.5 w-40">Note</th>
+                  <th className="text-left px-4 py-2.5 w-32">Azioni</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading && (
+                  <tr><td colSpan={8} className="px-4 py-6 text-center text-fluent-textMuted">Caricamento...</td></tr>
+                )}
+                {!loading && visibleItems.length === 0 && (
+                  <tr><td colSpan={8} className="px-4 py-6 text-center text-fluent-textMuted">Nessun materiale trovato.</td></tr>
+                )}
+                {visibleItems.map((item) => {
+                  const missing = item.min_stock - item.quantity > 0;
+                  return (
+                    <tr key={item.id} className={`border-t border-fluent-border ${missing ? "bg-red-50" : ""}`}>
+                      <td className="px-4 py-2.5 font-medium truncate" title={item.material_code}>{item.material_code}</td>
+                      <td className="px-4 py-2.5 truncate" title={item.description}>{item.description}</td>
+                      <td className="px-4 py-2.5 truncate" title={item.category ?? ""}>{item.category}</td>
+                      <td className="px-4 py-2.5 text-right">{item.min_stock}</td>
+                      <td className="px-4 py-2.5 text-right">{item.quantity}</td>
+                      <td className="px-4 py-2.5">{item.unit}</td>
+                      <td className="px-4 py-2.5 text-fluent-textMuted truncate" title={item.note ?? ""}>{item.note}</td>
+                      <td className="px-4 py-2.5 space-x-2 whitespace-nowrap">
+                        <button className="text-fluent-accent hover:underline" onClick={() => openEdit(item)}>Modifica</button>
+                        <button className="text-fluent-textMuted hover:underline" onClick={() => removeItem(item)}>Rimuovi</button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {editing && (
