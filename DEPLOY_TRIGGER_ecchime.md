@@ -1,1 +1,1 @@
-Cloudflare deployment trigger, certo  funzionera. lo so
+Cloudflare deployment trigger, file fondamentale
