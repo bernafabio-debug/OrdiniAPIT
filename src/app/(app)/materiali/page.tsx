@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import type { Material } from "@/lib/types";
 import { SUPPLIERS } from "@/lib/types";
+import { Pencil, Ban, RotateCcw } from "lucide-react";
 
 export default function MaterialiPage() {
   const [materials, setMaterials] = useState<Material[]>([]);
@@ -144,7 +145,7 @@ export default function MaterialiPage() {
               <th className="text-left px-4 py-2.5">Product Line</th>
               <th className="text-left px-4 py-2.5">Unità</th>
               <th className="text-left px-4 py-2.5">Stato</th>
-              {role === "admin" && <th className="text-left px-4 py-2.5">Azioni</th>}
+              {role === "admin" && <th className="text-center px-2 py-2.5">Azioni</th>}
             </tr>
           </thead>
           <tbody>
@@ -167,10 +168,24 @@ export default function MaterialiPage() {
                   </span>
                 </td>
                 {role === "admin" && (
-                  <td className="px-4 py-2.5 space-x-2">
-                    <button className="text-fluent-accent hover:underline" onClick={() => openEdit(m)}>Modifica</button>
-                    <button className="text-fluent-textMuted hover:underline" onClick={() => toggleActive(m)}>
-                      {m.active ? "Disattiva" : "Riattiva"}
+                  <td className="px-2 py-2.5 whitespace-nowrap text-center">
+                    <button
+                      type="button"
+                      className="p-1 rounded text-fluent-accent hover:bg-gray-100"
+                      title="Modifica"
+                      aria-label="Modifica"
+                      onClick={() => openEdit(m)}
+                    >
+                      <Pencil size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      className={`p-1 rounded hover:bg-gray-100 ${m.active ? "text-fluent-textMuted hover:text-red-600" : "text-fluent-textMuted hover:text-green-600"}`}
+                      title={m.active ? "Disattiva" : "Riattiva"}
+                      aria-label={m.active ? "Disattiva" : "Riattiva"}
+                      onClick={() => toggleActive(m)}
+                    >
+                      {m.active ? <Ban size={16} /> : <RotateCcw size={16} />}
                     </button>
                   </td>
                 )}
