@@ -38,14 +38,13 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-fluent-bg px-4">
+    <div className="min-h-screen flex items-center justify-center bg-fluent-sidebar px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-fluent-accent text-white font-bold text-lg mb-3">
-            PO
-          </div>
-          <h1 className="text-xl font-semibold text-fluent-text">PO Manager</h1>
-          <p className="text-sm text-fluent-textMuted mt-1">Accedi per gestire gli ordini materiali</p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo-anton-paar.png" alt="Anton Paar" className="w-56 h-auto mx-auto mb-5" />
+          <h1 className="text-xl font-bold text-white">Order&amp;Stock manager</h1>
+          <p className="text-sm text-gray-400 mt-1">Accedi per gestire gli ordini e lo stock dei ricambi</p>
         </div>
 
         <form onSubmit={handleSubmit} className="card p-6 space-y-4">
@@ -80,9 +79,6 @@ function LoginForm() {
             {loading ? "Accesso in corso..." : "Accedi"}
           </button>
 
-          <p className="text-xs text-fluent-textMuted text-center pt-2">
-            Demo: admin@azienda.it / Admin123! &nbsp;·&nbsp; utente@azienda.it / Utente123!
-          </p>
         </form>
       </div>
     </div>
