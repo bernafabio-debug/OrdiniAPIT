@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import type { StockInventoryItem, StockLocation } from "@/lib/types";
 import { MATERIAL_UNITS } from "@/lib/types";
+import { Pencil, Trash2 } from "lucide-react";
 
 type Me = { id: string; role: "user" | "admin" } | null;
 type SortKey = "material_code" | "description" | "category" | "min_stock" | "quantity" | "unit";
@@ -84,8 +85,8 @@ function QuantityCell({
       type="number"
       step="any"
       min={0}
-      className={`w-full text-center bg-transparent border rounded px-1 py-1 focus:bg-white focus:outline-none focus:ring-1 focus:ring-fluent-accent ${
-        state === "error" ? "border-red-500" : "border-transparent hover:border-fluent-border"
+      className={`w-full text-center bg-white border rounded px-1 py-1 focus:outline-none focus:ring-1 focus:ring-fluent-accent [&::-webkit-inner-spin-button]:opacity-100 [&::-webkit-outer-spin-button]:opacity-100 ${
+        state === "error" ? "border-red-500" : "border-gray-300"
       } ${state === "saving" ? "opacity-60" : ""}`}
       value={draft}
       disabled={state === "saving"}
@@ -390,10 +391,10 @@ export default function StockPage() {
                   <SortableTh label="Descrizione" sortKey="description" width="" sortKeyActive={sortKey} sortDir={sortDir} onSort={toggleSort} />
                   <SortableTh label="PL" sortKey="category" width="w-24" sortKeyActive={sortKey} sortDir={sortDir} onSort={toggleSort} />
                   <SortableTh label="Min" sortKey="min_stock" width="w-16" align="center" sortKeyActive={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                  <SortableTh label="Quantità" sortKey="quantity" width="w-20" align="center" sortKeyActive={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                  <SortableTh label="Quantità" sortKey="quantity" width="w-24" align="center" sortKeyActive={sortKey} sortDir={sortDir} onSort={toggleSort} />
                   <SortableTh label="UM" sortKey="unit" width="w-14" align="center" sortKeyActive={sortKey} sortDir={sortDir} onSort={toggleSort} />
                   <th className="text-left px-4 py-2.5 w-40">Note</th>
-                  <th className="text-left px-4 py-2.5 w-32">Azioni</th>
+                  <th className="text-center px-2 py-2.5 w-20">Azioni</th>
                 </tr>
               </thead>
               <tbody>
@@ -421,9 +422,25 @@ export default function StockPage() {
                       </td>
                       <td className="px-4 py-2.5 text-center">{item.unit}</td>
                       <td className="px-4 py-2.5 text-fluent-textMuted truncate" title={item.note ?? ""}>{item.note}</td>
-                      <td className="px-4 py-2.5 space-x-2 whitespace-nowrap">
-                        <button className="text-fluent-accent hover:underline" onClick={() => openEdit(item)}>Modifica</button>
-                        <button className="text-fluent-textMuted hover:underline" onClick={() => removeItem(item)}>Rimuovi</button>
+                      <td className="px-2 py-2.5 whitespace-nowrap text-center">
+                        <button
+                          type="button"
+                          className="p-1 rounded text-fluent-accent hover:bg-gray-100"
+                          title="Modifica"
+                          aria-label="Modifica"
+                          onClick={() => openEdit(item)}
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          className="p-1 rounded text-fluent-textMuted hover:text-red-600 hover:bg-gray-100"
+                          title="Rimuovi"
+                          aria-label="Rimuovi"
+                          onClick={() => removeItem(item)}
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </td>
                     </tr>
                   );
