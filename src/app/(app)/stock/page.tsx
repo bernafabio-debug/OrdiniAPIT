@@ -338,17 +338,6 @@ export default function StockPage() {
         )}
       </div>
 
-      {!loadingLocations && selectorOptions.length > 1 && (
-        <div className="card p-4 mb-4 flex items-center gap-3">
-          <label className="label-field mb-0">Stock:</label>
-          <select className="input-field max-w-xs" value={selectedCode} onChange={(e) => setSelectedCode(e.target.value)}>
-            {selectorOptions.map((s) => (
-              <option key={s.code} value={s.code}>{s.technician_name} ({s.code})</option>
-            ))}
-          </select>
-        </div>
-      )}
-
       {!loadingLocations && selectorOptions.length === 1 && selectedLocation && (
         <p className="text-sm text-fluent-textMuted mb-4">
           {selectedLocation.technician_name} — stock {selectedLocation.code}
@@ -364,7 +353,17 @@ export default function StockPage() {
 
       {selectedCode && (
         <>
-          <div className="card p-4 mb-4 flex flex-wrap gap-3">
+          <div className="card p-4 mb-4 flex flex-wrap items-center gap-3">
+            {selectorOptions.length > 1 && (
+              <>
+                <label className="label-field mb-0">Stock:</label>
+                <select className="input-field max-w-xs" value={selectedCode} onChange={(e) => setSelectedCode(e.target.value)}>
+                  {selectorOptions.map((s) => (
+                    <option key={s.code} value={s.code}>{s.technician_name} ({s.code})</option>
+                  ))}
+                </select>
+              </>
+            )}
             <input
               className="input-field max-w-xs"
               placeholder="Cerca PN, descrizione, note..."
