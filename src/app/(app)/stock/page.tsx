@@ -20,7 +20,7 @@ function SortableTh({
   label: string;
   sortKey: SortKey;
   width: string;
-  align?: "left" | "right";
+  align?: "left" | "right" | "center";
   sortKeyActive: SortKey;
   sortDir: SortDir;
   onSort: (key: SortKey) => void;
@@ -28,12 +28,76 @@ function SortableTh({
   const active = sortKeyActive === key;
   return (
     <th
-      className={`px-4 py-2.5 cursor-pointer hover:text-fluent-text ${width} ${align === "right" ? "text-right" : "text-left"}`}
+      className={`px-4 py-2.5 cursor-pointer hover:text-fluent-text ${width} ${align === "right" ? "text-right" : align === "center" ? "text-center" : "text-left"}`}
       onClick={() => onSort(key)}
     >
       {label}
       {active ? (sortDir === "asc" ? " ▲" : " ▼") : ""}
     </th>
+  );
+}
+
+// Cella "Quantità" modificabile direttamente in tabella: salva al blur / Invio, Esc annulla.
+function QuantityCell({
+  item,
+  onSaved
+}: {
+  item: StockInventoryItem;
+  onSaved: (id: string, quantity: number) => void;
+}) {
+  const [draft, setDraft] = useState(String(item.quantity));
+  const [state, setState] = useState<"idle" | "saving" | "error">("idle");
+
+  // Riallinea il valore mostrato se la riga cambia dall'esterno (ricarica, modifica da modale)
+  useEffect(() => {
+    setDraft(String(item.quantity));
+  }, [item.quantity]);
+
+  async function commit() {
+    const parsed = parseFloat(draft.replace(",", "."));
+    if (!isFinite(parsed) || parsed < 0) {
+      setDraft(String(item.quantity));
+      return;
+    }
+    if (parsed === item.quantity) {
+      setDraft(String(item.quantity));
+      return;
+    }
+    setState("saving");
+    // L'API aggiorna quantità, minimo e note insieme: reinvio gli altri valori invariati
+    const res = await fetch(`/api/stock-inventory/${item.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ quantity: parsed, min_stock: item.min_stock, note: item.note })
+    });
+    if (!res.ok) {
+      setState("error");
+      setDraft(String(item.quantity));
+      return;
+    }
+    setState("idle");
+    onSaved(item.id, parsed);
+  }
+
+  return (
+    <input
+      type="number"
+      step="any"
+      min={0}
+      className={`w-full text-center bg-transparent border rounded px-1 py-1 focus:bg-white focus:outline-none focus:ring-1 focus:ring-fluent-accent ${
+        state === "error" ? "border-red-500" : "border-transparent hover:border-fluent-border"
+      } ${state === "saving" ? "opacity-60" : ""}`}
+      value={draft}
+      disabled={state === "saving"}
+      title={state === "error" ? "Salvataggio non riuscito, riprova" : "Modifica la quantità e premi Invio"}
+      onFocus={(e) => e.target.select()}
+      onChange={(e) => { setDraft(e.target.value); if (state === "error") setState("idle"); }}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+        if (e.key === "Escape") { setDraft(String(item.quantity)); (e.target as HTMLInputElement).blur(); }
+      }}
+    />
   );
 }
 
@@ -323,11 +387,11 @@ export default function StockPage() {
               <thead className="bg-gray-50 text-fluent-textMuted text-xs uppercase select-none">
                 <tr>
                   <SortableTh label="PN" sortKey="material_code" width="w-24" sortKeyActive={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                  <SortableTh label="Descrizione" sortKey="description" width="w-56" sortKeyActive={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                  <SortableTh label="Descrizione" sortKey="description" width="" sortKeyActive={sortKey} sortDir={sortDir} onSort={toggleSort} />
                   <SortableTh label="PL" sortKey="category" width="w-24" sortKeyActive={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                  <SortableTh label="Min" sortKey="min_stock" width="w-16" align="right" sortKeyActive={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                  <SortableTh label="Quantità" sortKey="quantity" width="w-20" align="right" sortKeyActive={sortKey} sortDir={sortDir} onSort={toggleSort} />
-                  <SortableTh label="UM" sortKey="unit" width="w-14" sortKeyActive={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                  <SortableTh label="Min" sortKey="min_stock" width="w-16" align="center" sortKeyActive={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                  <SortableTh label="Quantità" sortKey="quantity" width="w-20" align="center" sortKeyActive={sortKey} sortDir={sortDir} onSort={toggleSort} />
+                  <SortableTh label="UM" sortKey="unit" width="w-14" align="center" sortKeyActive={sortKey} sortDir={sortDir} onSort={toggleSort} />
                   <th className="text-left px-4 py-2.5 w-40">Note</th>
                   <th className="text-left px-4 py-2.5 w-32">Azioni</th>
                 </tr>
@@ -346,9 +410,16 @@ export default function StockPage() {
                       <td className="px-4 py-2.5 font-medium truncate" title={item.material_code}>{item.material_code}</td>
                       <td className="px-4 py-2.5 truncate" title={item.description}>{item.description}</td>
                       <td className="px-4 py-2.5 truncate" title={item.category ?? ""}>{item.category}</td>
-                      <td className="px-4 py-2.5 text-right">{item.min_stock}</td>
-                      <td className="px-4 py-2.5 text-right">{item.quantity}</td>
-                      <td className="px-4 py-2.5">{item.unit}</td>
+                      <td className="px-4 py-2.5 text-center">{item.min_stock}</td>
+                      <td className="px-2 py-1.5 text-center">
+                        <QuantityCell
+                          item={item}
+                          onSaved={(id, quantity) =>
+                            setItems((prev) => prev.map((r) => (r.id === id ? { ...r, quantity } : r)))
+                          }
+                        />
+                      </td>
+                      <td className="px-4 py-2.5 text-center">{item.unit}</td>
                       <td className="px-4 py-2.5 text-fluent-textMuted truncate" title={item.note ?? ""}>{item.note}</td>
                       <td className="px-4 py-2.5 space-x-2 whitespace-nowrap">
                         <button className="text-fluent-accent hover:underline" onClick={() => openEdit(item)}>Modifica</button>
